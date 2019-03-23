@@ -6,6 +6,42 @@ namespace RockPaperScissors
 {
     public static class ComputerOpponent
     {
+        public static Option Decision()
+        {
+            _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
+            // Eventually check for pattern recognition... E.G.:
+            // If user plays R(W), then weight P + 1
+            // If user plays R(W), R(W), then weight P + 2
+            // If user playls R(L), then weight R + 1
+            // If user plays R(L), R(L), then weight R + 2
+            // If user plays R(W), S(L), R(W), then weight P + 1
+            // If user plays R(W), S(L), R(L), then weight R + 2? Same as option 3?
+            // What's the max sample size needed?
+
+            //ComparePreviousGameAndAssignWeight();
+            CheckForPatternsAndAssignWeight();
+            //CheckForImmediateRepeatsAndAddWeight();
+            //CheckForNumberOfPicksAndAssignWeight();
+
+            List<KeyValuePair<Option, int>> results = _OptionWeights.OrderByDescending(k => k.Value).ToList();
+
+            if (results[0].Value == results[1].Value && results[1].Value == results[2].Value)
+            {
+                //Instead of this, how about assigning a small random value to each weight?
+                return RandomDecision();
+            }
+
+            return results.First().Key;
+
+            // If no pattern, and count > some value OR the last play was a loss...
+            //if (GetLastResult().outcome == Outcome.Lose)
+            //{
+            //    return PickExpectedWinner(PickExpectedWinner(GetLastResult().userPick));
+            //}
+
+            //return RandomDecision();
+        }
+
         public static void CheckForPatternsAndAssignWeight()
         {
             var segments = new List<List<(Option UserPick, Outcome Outcome)>>();
@@ -25,15 +61,31 @@ namespace RockPaperScissors
                 segments.Add(group);
             }
 
-            // Iterate over segments and add weights based on the chunks of 3
+            // Iterate over segments and add weights based on the chunks of 3 likelihood for victory
             // Maybe increase weights the closer to the most recent game?
+            // Apply weights to current iteration and make decision for next game
+
+            // Could probably increase efficiency here by not re-analyzing games we've already analyzed.
+            int gamesAnalyzed = 0;
             foreach (var group in segments)
             {
                 foreach (var r in group)
                 {
+                    _OptionWeights[PickWinningOption(r.UserPick)] += 1;
+                    if (r.Outcome == Outcome.Win)
+                    {
+                        _OptionWeights[PickWinningOption(r.UserPick)] += (1 + gamesAnalyzed);
+                    }
+                    else if(r.Outcome == Outcome.Lose)
+                    {
+                        _OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 + gamesAnalyzed);
+                    }
+                    gamesAnalyzed++;
                     // calculate repeat usage
                     // calculate last victory
                     // calculate average usage
+                    
+                    // Assign small amount of randomness?
                 }
             }
 
@@ -63,38 +115,19 @@ namespace RockPaperScissors
 
         }
 
-        public static Option Decision()
+        private static Option PickWinningOption(Option userSelection)
         {
-            // Eventually check for pattern recognition... E.G.:
-            // If user plays R(W), then weight P + 1
-            // If user plays R(W), R(W), then weight P + 2
-            // If user playls R(L), then weight R + 1
-            // If user plays R(L), R(L), then weight R + 2
-            // If user plays R(W), S(L), R(W), then weight P + 1
-            // If user plays R(W), S(L), R(L), then weight R + 2? Same as option 3?
-            // What's the max sample size needed?
-
-            //ComparePreviousGameAndAssignWeight();
-            CheckForPatternsAndAssignWeight();
-            //CheckForImmediateRepeatsAndAddWeight();
-            //CheckForNumberOfPicksAndAssignWeight();
-
-            List<KeyValuePair<Option, int>> results = _OptionWeights.OrderByDescending(k => k.Value).ToList();
-
-            if (results[0].Value == results[1].Value && results[1].Value == results[2].Value)
+            switch (userSelection)
             {
-                return RandomDecision();
+                case Option.Rock:
+                    return Option.Paper;
+                case Option.Paper:
+                    return Option.Scissors;
+                case Option.Scissors:
+                    return Option.Rock;
+                default:
+                    throw new ArgumentException("No expected user selection passed into ");
             }
-
-            return _OptionWeights.First().Key;
-
-            // If no pattern, and count > some value OR the last play was a loss...
-            //if (GetLastResult().outcome == Outcome.Lose)
-            //{
-            //    return PickExpectedWinner(PickExpectedWinner(GetLastResult().userPick));
-            //}
-
-            //return RandomDecision();
         }
 
         public static Option RandomDecision()
@@ -119,8 +152,7 @@ namespace RockPaperScissors
             _PriorHumanChoices.Add((humanChoice, gameResult));
         }
 
-        // Find out a way to assess if it makes sense to restart the weighting every iteration
-        private static Dictionary<Option, int> _OptionWeights { get; set; } = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
+        private static Dictionary<Option, int> _OptionWeights { get; set; }
         private static readonly int _IterationsToAnalyzeForPattern = 3;
         private static List<(Option UserPick, Outcome Outcome)> _PriorHumanChoices { get; set; } = new List<(Option, Outcome)>();
     }
