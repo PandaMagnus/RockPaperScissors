@@ -61,26 +61,35 @@ namespace RockPaperScissors
                 segments.Add(group);
             }
 
+            // Another option: take most recent segment, and compare against each of the prior segments
+            // Assign weights that way
+
+            // Another option: write methods for most common strategies and randomly pick one eaach game
+            // Common strategies: 
+                // Pick whatever beats what just beat you and stay with winning pick
+                // Pick the same as what just beat you
+
             // Iterate over segments and add weights based on the chunks of 3 likelihood for victory
             // Maybe increase weights the closer to the most recent game?
             // Apply weights to current iteration and make decision for next game
 
             // Could probably increase efficiency here by not re-analyzing games we've already analyzed.
-            int gamesAnalyzed = 0;
+            // Also, this disproportionally weights in favor of repeats instead of victories/losses
+            int gamesAnalyzed = 1;
             foreach (var group in segments)
             {
                 foreach (var r in group)
                 {
+                    gamesAnalyzed++;
                     _OptionWeights[PickWinningOption(r.UserPick)] += 1;
                     if (r.Outcome == Outcome.Win)
                     {
-                        _OptionWeights[PickWinningOption(r.UserPick)] += (1 + gamesAnalyzed);
+                        _OptionWeights[PickWinningOption(r.UserPick)] += (1 * gamesAnalyzed);
                     }
                     else if(r.Outcome == Outcome.Lose)
                     {
-                        _OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 + gamesAnalyzed);
+                        _OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 * gamesAnalyzed);
                     }
-                    gamesAnalyzed++;
                     // calculate repeat usage
                     // calculate last victory
                     // calculate average usage
