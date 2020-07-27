@@ -1,11 +1,12 @@
 ﻿using RockPaperScissors.Api;
+using RockPaperScissors.Api.Models;
 using System;
 
 namespace ConsoleApp
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
             do
             {
@@ -15,18 +16,23 @@ namespace ConsoleApp
                 {
                     return;
                 }
-                Option playerChoice = RockPaperScissors.Api.RockPaperScissors.ValidateUserInput(userInput);
+                Option playerChoice = RockPaperScissors.Api.RockPaperScissors.ValidatePlayerInput(userInput);
                 if (playerChoice == Option.Invalid)
                 {
                     Console.WriteLine("Your choice could not be understood. Please choose \"Rock\", \"Paper\", or \"Scissors\".");
                     continue;
                 }
-                var gameResult = RockPaperScissors.Api.RockPaperScissors.ProcessUserInput(new RockPaperScissors.Api.Models.Game { PlayerChoice = playerChoice });
+                var gameResult = RockPaperScissors.Api.RockPaperScissors.ProcessPlayerInput(new RockPaperScissors.Api.Models.Game { PlayerChoice = playerChoice });
                 Console.WriteLine("Computer chose...");
                 Console.WriteLine(gameResult.ComputerChoice);
 
                 Console.WriteLine(gameResult.GameResult);
             } while (true);
         }
+
+        //public static Game DetermineGame(Game game)
+        //{
+
+        //}
     }
 }

@@ -26,7 +26,7 @@ namespace RockPaperScissors.Api.Controllers
         {
             var formattedChoice = new Game
             {
-                PlayerChoice = RockPaperScissors.ValidateUserInput(choice)
+                PlayerChoice = RockPaperScissors.ValidatePlayerInput(choice)
             };
             if (formattedChoice.PlayerChoice is Option.Invalid)
             {
@@ -44,7 +44,7 @@ namespace RockPaperScissors.Api.Controllers
         [HttpPost("play")]
         public Game SendChoiceAsync([FromBody]Game content)
         {
-            return RockPaperScissors.ProcessUserInput(content);
+            return RockPaperScissors.ProcessPlayerInput(content);
         }
     }
 }

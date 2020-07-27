@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorServerApp\BlazorServerApp.csproj" />
+    <ProjectReference Include="..\ConsoleApp\ConsoleApp.csproj" />
     <ProjectReference Include="..\RockPaperScissors.Api\RockPaperScissors.Api.csproj" />
   </ItemGroup>
 

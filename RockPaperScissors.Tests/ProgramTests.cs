@@ -1,3 +1,4 @@
+using RockPaperScissors.Api;
 using Xunit;
 
 namespace RockPaperScissors.Tests
@@ -26,7 +27,7 @@ namespace RockPaperScissors.Tests
         //[InlineData(" ", Option.Invalid)]
         //public void ValidateValidUserInput(string input, Option expectedResult)
         //{
-        //    Assert.Equal(expectedResult, Program.ValidateUserChoice(input));
+        //    Assert.Equal(expectedResult, ConsoleApp.Program.ValidateUserChoice(input));
         //}
     }
 }

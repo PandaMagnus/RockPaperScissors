@@ -8,7 +8,7 @@ namespace RockPaperScissors.Api
 {
     public static class RockPaperScissors
     {
-        public static Option ValidateUserInput(string userInput)
+        public static Option ValidatePlayerInput(string userInput)
         {
             if (userInput == null) userInput = string.Empty;
 
@@ -25,7 +25,7 @@ namespace RockPaperScissors.Api
             };
         }
 
-        public static Game ProcessUserInput(Game game)
+        public static Game ProcessPlayerInput(Game game)
         {
             //Option userChoice = ValidateUserChoice(userInput);
             //if (userChoice == Option.Invalid)
