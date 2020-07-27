@@ -9,7 +9,6 @@ namespace ConsoleApp
         {
             do
             {
-                System.Threading.Tasks.Task.Delay(1000).Wait();
                 Console.WriteLine("Make your choice: Rock, Paper, or Scissors?");
                 var userInput = Console.ReadLine();
                 if (userInput.ToLower() == "quit" || userInput.ToLower() == "exit")
@@ -19,12 +18,12 @@ namespace ConsoleApp
                 Option playerChoice = RockPaperScissors.Api.RockPaperScissors.ValidateUserInput(userInput);
                 if (playerChoice == Option.Invalid)
                 {
+                    Console.WriteLine("Your choice could not be understood. Please choose \"Rock\", \"Paper\", or \"Scissors\".");
                     continue;
                 }
                 var gameResult = RockPaperScissors.Api.RockPaperScissors.ProcessUserInput(new RockPaperScissors.Api.Models.Game { PlayerChoice = playerChoice });
                 Console.WriteLine("Computer chose...");
                 Console.WriteLine(gameResult.ComputerChoice);
-                //ComputerOpponent.RecordOutcome(playerChoice, didHumanWin);
 
                 Console.WriteLine(gameResult.GameResult);
             } while (true);
