@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorServerApp.Data;
+using RockPaperScissors.Opponent;
+using System.Net.Http;
 
 namespace BlazorServerApp
 {
@@ -29,6 +31,17 @@ namespace BlazorServerApp
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<IDataAccess, DataAccess>();
+            //services.AddHttpClient("backend", c =>
+            //{
+            //    c.BaseAddress = new Uri("https://localhost:44388")
+            //});
+            services.AddTransient(typeof(HttpClient),
+                sp =>
+                    new HttpClient
+                    {
+                        BaseAddress = new Uri("https://localhost:44388")
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

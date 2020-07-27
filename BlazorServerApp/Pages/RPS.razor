@@ -1,0 +1,92 @@
+﻿@page "/rps"
+
+@using System.Text.Json
+@using RockPaperScissors.Api.Models
+@using BlazorServerApp.Models
+@using System.Net.Http
+@inject HttpClient Http
+
+<h3>RPS</h3>
+
+<div>
+    <p>Game outcome:</p>
+    @if (result is null)
+    {
+        <p><em>Awaiting player input...</em></p>
+    }
+    else
+    {
+        <p id="result"><em>@result</em></p>
+    }
+</div>
+<div>
+    <p>Make your choice:</p>
+    <EditForm Model="@rpsModel" OnValidSubmit="SendUserChoice">
+        <div>
+            <input id="player-input" class="@(error ? "alert alert-danger" : "alert alert-info")" type="text" maxlength="10" width="10" required @bind="playerSelection" />
+        </div>
+        <div>
+            <button id="submit-input-btn" class="btn @(error ? "btn-danger" : "btn-primary")">Play RPS</button>
+        </div>
+    </EditForm>
+</div>
+<div>
+    @if (string.IsNullOrWhiteSpace(computerPick))
+    {
+        <p><em>Computer has not made a decision yet</em></p>
+    }
+    else
+    {
+        <p id="computer-choice"><em>Computer Picks: @computerPick</em></p>
+    }
+</div>
+
+@code {
+    // Might make sense to change these to be a Game object OR a RockPaperScissors model object?
+    // Then, when needed, call Game.PlayerSelection, etc.
+    // See: https://docs.microsoft.com/en-us/aspnet/core/blazor/forms-validation?view=aspnetcore-3.1
+    private string playerSelection;
+    private string computerPick;
+    private string result;
+    private bool error;
+
+    private RockPaperScissorsModel rpsModel = new RockPaperScissorsModel();
+
+    private async Task SendUserChoice()
+    {
+        computerPick = "";
+        error = false;
+        HttpResponseMessage validateResponse = await Http.PostAsync($"/api/rockpaperscissors/validate/{playerSelection}", null);
+        if (!validateResponse.IsSuccessStatusCode)
+        {
+            error = true;
+            result = "Our service is down, please try again later.";
+        }
+
+        string responseString = await validateResponse.Content.ReadAsStringAsync();
+        // Instead of deserializing to Game, might make sense to instead deserialize to RockPaperScissors model?
+        Game formattedResponse = JsonSerializer.Deserialize<Game>(responseString);
+
+        if (!formattedResponse.IsPlayerSelectionValid)
+        {
+            error = true;
+            result = formattedResponse.ErrorMessage;
+            return;
+        }
+
+        StringContent content = new StringContent(await validateResponse.Content.ReadAsStringAsync(), System.Text.Encoding.UTF8, "application/json");
+        HttpResponseMessage gameResponse = await Http.PostAsync($"/api/rockpaperscissors/play", content);
+        if (!gameResponse.IsSuccessStatusCode)
+        {
+            error = true;
+            result = "Unable to determine game result. Please try again later.";
+            return;
+        }
+
+        responseString = await gameResponse.Content.ReadAsStringAsync();
+        formattedResponse = JsonSerializer.Deserialize<Game>(responseString);
+
+        computerPick = formattedResponse.ComputerChoice.ToString();
+        result = formattedResponse.GameResult;
+    }
+}

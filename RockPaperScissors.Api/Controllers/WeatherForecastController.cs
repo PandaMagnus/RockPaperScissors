@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RockPaperScissors.Api.Models;
 
-namespace vue_app.Controllers
+namespace RockPaperScissors.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]

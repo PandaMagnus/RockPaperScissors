@@ -1,6 +1,6 @@
 using System;
 
-namespace vue_app
+namespace RockPaperScissors.Api.Models
 {
     public class WeatherForecast
     {
