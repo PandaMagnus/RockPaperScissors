@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RockPaperScissors.Api.Models;
@@ -30,11 +32,9 @@ namespace RockPaperScissors.Api.Controllers
             };
             if (formattedChoice.PlayerChoice is Option.Invalid)
             {
-                return new Game
-                {
-                    IsPlayerSelectionValid = false,
-                    ErrorMessage = "Invalid input. Please choose 'Rock', 'Paper', or 'Scissors'"
-                };
+                formattedChoice.IsPlayerSelectionValid = false;
+                formattedChoice.ErrorMessage = "Invalid input. Please choose 'Rock', 'Paper', or 'Scissors'.";
+                return formattedChoice;
             }
             formattedChoice.IsPlayerSelectionValid = true;
             return formattedChoice;
@@ -46,5 +46,24 @@ namespace RockPaperScissors.Api.Controllers
         {
             return RockPaperScissors.ProcessPlayerInput(content);
         }
+
+        [HttpGet("memoryLeak")]
+        public Game ExampleMemoryLeak()
+        {
+            SimulatedMemoryLeak();
+            // Or should I just continually assign a large variable here to run myself out of memory?
+            return new Game { };
+        }
+
+        private async Task SimulatedMemoryLeak()
+        {
+            while (true)
+            {
+                FakeLeak.Add(new byte[1024]);
+                await Task.Delay(50);
+            }
+        }
+
+        private static List<byte[]> FakeLeak { get; set; } = new List<byte[]>();
     }
 }

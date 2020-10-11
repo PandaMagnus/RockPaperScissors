@@ -11,7 +11,7 @@ namespace RockPaperScissors.Tests
         public async void PlayerSendsValidAndWinningChoiceGetsSuccessfulResultBack()
         {
             // Need way to mock out API. Probably override DI here?
-            var view = new RPS();
+            var view = new BlazorServerApp.Pages.RPS();
 
             var httpClient = view.GetType().GetProperty(
                 "Http",

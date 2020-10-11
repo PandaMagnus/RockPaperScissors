@@ -21,12 +21,12 @@
 </div>
 <div>
     <p>Make your choice:</p>
-    <EditForm Model="@rpsModel" OnValidSubmit="SendUserChoice">
+    <EditForm Model="@rpsModel" OnValidSubmit="SendUserChoice" id="submit-choice-form">
         <div>
-            <input id="player-input" class="@(error ? "alert alert-danger" : "alert alert-info")" type="text" maxlength="10" width="10" required @bind="playerSelection" />
+            <input id="player-input" class="@(error ? "alert alert-danger" : "alert alert-info")" type="text" maxlength="10" width="10" required @bind="rpsModel.PlayerChoice" />
         </div>
         <div>
-            <button id="submit-input-btn" class="btn @(error ? "btn-danger" : "btn-primary")">Play RPS</button>
+            <button id="submit-input-btn" class="btn @(error ? "btn-danger" : "btn-primary")" type="submit">Play RPS</button>
         </div>
     </EditForm>
 </div>
@@ -45,7 +45,6 @@
     // Might make sense to change these to be a Game object OR a RockPaperScissors model object?
     // Then, when needed, call Game.PlayerSelection, etc.
     // See: https://docs.microsoft.com/en-us/aspnet/core/blazor/forms-validation?view=aspnetcore-3.1
-    private string playerSelection;
     private string computerPick;
     private string result;
     private bool error;
@@ -56,7 +55,7 @@
     {
         computerPick = "";
         error = false;
-        HttpResponseMessage validateResponse = await Http.PostAsync($"/api/rockpaperscissors/validate/{playerSelection}", null);
+        HttpResponseMessage validateResponse = await Http.PostAsync($"/api/rockpaperscissors/validate/{rpsModel.PlayerChoice}", null);
         if (!validateResponse.IsSuccessStatusCode)
         {
             error = true;
@@ -75,6 +74,7 @@
         }
 
         StringContent content = new StringContent(await validateResponse.Content.ReadAsStringAsync(), System.Text.Encoding.UTF8, "application/json");
+        var test = await content.ReadAsStringAsync();
         HttpResponseMessage gameResponse = await Http.PostAsync($"/api/rockpaperscissors/play", content);
         if (!gameResponse.IsSuccessStatusCode)
         {

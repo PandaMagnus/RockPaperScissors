@@ -16,6 +16,7 @@ namespace RockPaperScissors.Tests.Data
     public class HttpMessageHandlerFake : HttpMessageHandler
     {
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        
         {
             if (request.RequestUri.AbsolutePath.Contains("/validate/rock-win"))
             {
@@ -25,6 +26,7 @@ namespace RockPaperScissors.Tests.Data
                     Content = new StringContent("{\"isPlayerSelectionValid\":true,\"playerChoice\":1,\"computerChoice\":0,\"gameResult\":null,\"errorMessage\":null}")
                 };
             }
+            //Add more test scenarios here.
             else if (request.RequestUri.AbsolutePath.Contains("/play"))
             {
                 string content = await request.Content.ReadAsStringAsync();
@@ -39,7 +41,11 @@ namespace RockPaperScissors.Tests.Data
             }
             else
             {
-
+                return new HttpResponseMessage
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent("{\"isPlayerSelectionValid\":false,\"playerChoice\":0,\"computerChoice\":0,\"gameResult\":null,\"errorMessage\":\"Unknown failure\"}")
+                };
             }
 
             return null;

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 
 namespace RockPaperScissors.Api
 {
@@ -10,7 +9,7 @@ namespace RockPaperScissors.Api
     {
         public static Option ValidatePlayerInput(string userInput)
         {
-            if (userInput == null) userInput = string.Empty;
+            if (userInput == null) userInput = "";
 
             return userInput.ToLower() switch
             {
@@ -67,17 +66,13 @@ namespace RockPaperScissors.Api
         {
             Random rand = new Random();
             var decision = rand.Next(3);
-            switch (decision)
+            return decision switch
             {
-                case 0:
-                    return Option.Rock;
-                case 1:
-                    return Option.Paper;
-                case 2:
-                    return Option.Scissors;
-                default:
-                    return Option.Rock;
-            }
+                0 => Option.Rock,
+                1 => Option.Paper,
+                2 => Option.Scissors,
+                _ => Option.Rock,
+            };
         }
 
         private static Outcome DetermineIfPlayerWon(Option playerChoice, Option computerChoice)
@@ -200,7 +195,7 @@ namespace RockPaperScissors.Api
 
         public static Option Decision()
         {
-            _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
+            OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
             // Eventually check for pattern recognition... E.G.:
             // If user plays R(W), then weight P + 1
             // If user plays R(W), R(W), then weight P + 2
@@ -215,7 +210,7 @@ namespace RockPaperScissors.Api
             //CheckForImmediateRepeatsAndAddWeight();
             //CheckForNumberOfPicksAndAssignWeight();
 
-            List<KeyValuePair<Option, int>> results = _OptionWeights.OrderByDescending(k => k.Value).ToList();
+            List<KeyValuePair<Option, int>> results = OptionWeights.OrderByDescending(k => k.Value).ToList();
 
             if (results[0].Value == results[1].Value && results[1].Value == results[2].Value)
             {
@@ -237,17 +232,17 @@ namespace RockPaperScissors.Api
         public static void CheckForPatternsAndAssignWeight()
         {
             var segments = new List<List<(Option UserPick, Outcome Outcome)>>();
-            for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+            for (int i = 0; i < PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
             {
                 var group = new List<(Option UserChoice, Outcome Outcome)>();
 
                 for (int j = 0; j < _IterationsToAnalyzeForPattern; j++)
                 {
-                    if (_PriorHumanChoices.Count <= i + j)
+                    if (PriorHumanChoices.Count <= i + j)
                     {
                         break;
                     }
-                    group.Add((_PriorHumanChoices[i + j].UserPick, _PriorHumanChoices[i + j].Outcome));
+                    group.Add((PriorHumanChoices[i + j].UserPick, PriorHumanChoices[i + j].Outcome));
                 }
 
                 segments.Add(group);
@@ -273,14 +268,14 @@ namespace RockPaperScissors.Api
                 foreach (var r in group)
                 {
                     gamesAnalyzed++;
-                    _OptionWeights[PickWinningOption(r.UserPick)] += 1;
+                    OptionWeights[PickWinningOption(r.UserPick)] += 1;
                     if (r.Outcome == Outcome.Win)
                     {
-                        _OptionWeights[PickWinningOption(r.UserPick)] += (1 * gamesAnalyzed);
+                        OptionWeights[PickWinningOption(r.UserPick)] += (1 * gamesAnalyzed);
                     }
                     else if (r.Outcome == Outcome.Lose)
                     {
-                        _OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 * gamesAnalyzed);
+                        OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 * gamesAnalyzed);
                     }
                     // calculate repeat usage
                     // calculate last victory
@@ -318,27 +313,23 @@ namespace RockPaperScissors.Api
 
         private static Option PickWinningOption(Option userSelection)
         {
-            switch (userSelection)
+            return userSelection switch
             {
-                case Option.Rock:
-                    return Option.Paper;
-                case Option.Paper:
-                    return Option.Scissors;
-                case Option.Scissors:
-                    return Option.Rock;
-                default:
-                    throw new ArgumentException("No expected user selection passed into ");
-            }
+                Option.Rock => Option.Paper,
+                Option.Paper => Option.Scissors,
+                Option.Scissors => Option.Rock,
+                _ => throw new ArgumentException("No expected user selection passed into "),
+            };
         }
 
         public static void RecordOutcome(Option humanChoice, Outcome gameResult)
         {
-            _PriorHumanChoices.Add((humanChoice, gameResult));
+            PriorHumanChoices.Add((humanChoice, gameResult));
         }
 
-        private static Dictionary<Option, int> _OptionWeights { get; set; }
+        private static Dictionary<Option, int> OptionWeights { get; set; }
         private static readonly int _IterationsToAnalyzeForPattern = 3;
-        private static List<(Option UserPick, Outcome Outcome)> _PriorHumanChoices { get; set; } = new List<(Option, Outcome)>();
+        private static List<(Option UserPick, Outcome Outcome)> PriorHumanChoices { get; set; } = new List<(Option, Outcome)>();
     }
 
     public enum Option

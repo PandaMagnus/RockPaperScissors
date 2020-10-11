@@ -1,4 +1,5 @@
 ﻿using RockPaperScissors.Api;
+using RockPaperScissors.Api.Controllers;
 using RockPaperScissors.Api.Models;
 using System;
 
@@ -16,23 +17,19 @@ namespace ConsoleApp
                 {
                     return;
                 }
-                Option playerChoice = RockPaperScissors.Api.RockPaperScissors.ValidatePlayerInput(userInput);
-                if (playerChoice == Option.Invalid)
+                RockPaperScissorsController controller = new RockPaperScissorsController();
+                Game gameResult = controller.ValidateChoiceAsync(userInput);
+                if (!gameResult.IsPlayerSelectionValid)
                 {
-                    Console.WriteLine("Your choice could not be understood. Please choose \"Rock\", \"Paper\", or \"Scissors\".");
+                    Console.WriteLine(gameResult.ErrorMessage);
                     continue;
                 }
-                var gameResult = RockPaperScissors.Api.RockPaperScissors.ProcessPlayerInput(new RockPaperScissors.Api.Models.Game { PlayerChoice = playerChoice });
+                gameResult = controller.SendChoiceAsync(gameResult);
                 Console.WriteLine("Computer chose...");
                 Console.WriteLine(gameResult.ComputerChoice);
 
                 Console.WriteLine(gameResult.GameResult);
             } while (true);
         }
-
-        //public static Game DetermineGame(Game game)
-        //{
-
-        //}
     }
 }
