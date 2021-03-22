@@ -53,6 +53,7 @@
 
     private async Task SendUserChoice()
     {
+        // Should probably extract most of this logic out to a controller.
         computerPick = "";
         error = false;
         HttpResponseMessage validateResponse = await Http.PostAsync($"/api/rockpaperscissors/validate/{rpsModel.PlayerChoice}", null);

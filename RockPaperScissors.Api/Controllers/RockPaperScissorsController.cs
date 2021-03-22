@@ -47,11 +47,16 @@ namespace RockPaperScissors.Api.Controllers
             return RockPaperScissors.ProcessPlayerInput(content);
         }
 
+        [HttpGet("fail")]
+        public void ExampleFailScenario()
+        {
+            throw new InvalidOperationException();
+        }
+
         [HttpGet("memoryLeak")]
         public Game ExampleMemoryLeak()
         {
             SimulatedMemoryLeak();
-            // Or should I just continually assign a large variable here to run myself out of memory?
             return new Game { };
         }
 

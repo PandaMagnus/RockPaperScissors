@@ -5,11 +5,160 @@ using System.Linq;
 
 namespace RockPaperScissors.Api
 {
+    public enum Option
+    {
+        Invalid,
+        Rock,
+        Paper,
+        Scissors
+    }
+
+    public enum Outcome
+    {
+        Indeterminate,
+        Win,
+        Lose,
+        Draw
+    }
+
     public static class RockPaperScissors
     {
+        private static Dictionary<Option, int> _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
+        private static readonly int _IterationsToAnalyzeForPattern = 3;
+        private static List<(Option PlayerPick, Outcome Outcome)> _PriorHumanChoices = new List<(Option, Outcome)>();
+        private static List<List<(Option PlayerPick, Outcome Outcome)>> _TrainingModel = new List<List<(Option PlayerPick, Outcome Outcome)>>();
+        //private static List<(Option PlayerPick, Outcome Outcome)[]> _TrainingModel = new List<(Option PlayerPick, Outcome Outcome)[]>();
+
+        // Probably extract these adds out for clarity
+        // Also figure out how to configure this for games that last for other than 3 turns
+        // Also find a better way to do this other than hard coding. Maybe play something like 1,000 random choice games?
+        static RockPaperScissors()
+        {
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Rock, Outcome.Win),
+                    (Option.Rock, Outcome.Lose),
+                    (Option.Scissors, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Rock, Outcome.Win),
+                    (Option.Rock, Outcome.Lose),
+                    (Option.Scissors, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Rock, Outcome.Lose),
+                    (Option.Scissors, Outcome.Win),
+                    (Option.Scissors, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Rock, Outcome.Draw),
+                    (Option.Rock, Outcome.Win),
+                    (Option.Rock, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Rock, Outcome.Draw),
+                    (Option.Paper, Outcome.Draw),
+                    (Option.Scissors, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Paper, Outcome.Win),
+                    (Option.Paper, Outcome.Lose),
+                    (Option.Rock, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Paper, Outcome.Win),
+                    (Option.Paper, Outcome.Lose),
+                    (Option.Rock, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Paper, Outcome.Lose),
+                    (Option.Rock, Outcome.Win),
+                    (Option.Rock, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Paper, Outcome.Draw),
+                    (Option.Paper, Outcome.Win),
+                    (Option.Paper, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Paper, Outcome.Draw),
+                    (Option.Scissors, Outcome.Draw),
+                    (Option.Rock, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Scissors, Outcome.Win),
+                    (Option.Scissors, Outcome.Lose),
+                    (Option.Paper, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Scissors, Outcome.Win),
+                    (Option.Scissors, Outcome.Lose),
+                    (Option.Paper, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Scissors, Outcome.Lose),
+                    (Option.Paper, Outcome.Win),
+                    (Option.Paper, Outcome.Win)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Scissors, Outcome.Draw),
+                    (Option.Scissors, Outcome.Win),
+                    (Option.Scissors, Outcome.Lose)
+                }
+            );
+            _TrainingModel.Add(
+                new List<(Option PlayerPick, Outcome Outcome)>
+                {
+                    (Option.Scissors, Outcome.Draw),
+                    (Option.Rock, Outcome.Draw),
+                    (Option.Paper, Outcome.Win)
+                }
+            );
+        }
+
         public static Option ValidatePlayerInput(string userInput)
         {
-            if (userInput == null) userInput = "";
+            if (userInput is null) userInput = "";
 
             return userInput.ToLower() switch
             {
@@ -26,83 +175,74 @@ namespace RockPaperScissors.Api
 
         public static Game ProcessPlayerInput(Game game)
         {
-            //Option userChoice = ValidateUserChoice(userInput);
-            //if (userChoice == Option.Invalid)
-            //{
-            //    return "Invalid input. Please choose 'Rock', 'Paper', or 'Scissors'";
-            //}
-            // Probably extract this out into a couple of different APIs so that I have better control over this.
-            // E.G. one API that calls validate input, one that calls for the computer decision, and one that processes the outcome
-            //Console.WriteLine("Computer chose...");
-            game.ComputerChoice = RandomComputerPick();
-            //Console.WriteLine(computerChoice);
-            Outcome didPlayerWin = DetermineIfPlayerWon(game.PlayerChoice, game.ComputerChoice);
-            //ComputerOpponent.RecordOutcome(userChoice, didHumanWin);
+            game.ComputerChoice = DetermineComputerChoice();
+            Outcome didPlayerWin = DetermineIfPlayerWon(game);
 
             // Might make sense to move this logic into DetermineIfHumanWon
-            if (didPlayerWin == Outcome.Indeterminate)
+            if (didPlayerWin is Outcome.Indeterminate)
             {
                 game.GameResult = "Unable to determine the victory. Please try again.";
-                return game;
             }
-            else if (didPlayerWin == Outcome.Draw)
+            else if (didPlayerWin is Outcome.Draw)
             {
                 game.GameResult = "A draw occurred. Try again!";
-                return game;
             }
-            else if (didPlayerWin == Outcome.Win)
+            else if (didPlayerWin is Outcome.Win)
             {
                 game.GameResult = "Congratulations, you won!";
-                return game;
             }
             else
             {
                 game.GameResult = "Sorry, the computer won. Please try again!";
-                return game;
             }
+
+            _PriorHumanChoices.Add((game.PlayerChoice, didPlayerWin));
+            return game;
         }
 
-        private static Option RandomComputerPick()
+        private static Option DetermineComputerChoice()
         {
-            Random rand = new Random();
-            var decision = rand.Next(3);
-            return decision switch
+            Option decision;
+            if (_PriorHumanChoices.Count == 0)
             {
-                0 => Option.Rock,
-                1 => Option.Paper,
-                2 => Option.Scissors,
-                _ => Option.Rock,
-            };
+                decision = RandomPick();
+            }
+            else
+            {
+                decision = Decision();
+            }
+
+            return decision;
         }
 
-        private static Outcome DetermineIfPlayerWon(Option playerChoice, Option computerChoice)
+        private static Outcome DetermineIfPlayerWon(Game game)
         {
             // Feels like this might be able to be done more efficiently
 
-            switch (playerChoice)
+            switch (game.PlayerChoice)
             {
                 case Option.Rock:
-                    if (computerChoice == Option.Rock)
+                    if (game.ComputerChoice is Option.Rock)
                         return Outcome.Draw;
-                    if (computerChoice == Option.Scissors)
+                    if (game.ComputerChoice is Option.Scissors)
                         return Outcome.Win;
-                    if (computerChoice == Option.Paper)
+                    if (game.ComputerChoice is Option.Paper)
                         return Outcome.Lose;
                     break;
                 case Option.Paper:
-                    if (computerChoice == Option.Rock)
+                    if (game.ComputerChoice is Option.Rock)
                         return Outcome.Win;
-                    if (computerChoice == Option.Scissors)
+                    if (game.ComputerChoice is Option.Scissors)
                         return Outcome.Lose;
-                    if (computerChoice == Option.Paper)
+                    if (game.ComputerChoice is Option.Paper)
                         return Outcome.Draw;
                     break;
                 case Option.Scissors:
-                    if (computerChoice == Option.Rock)
+                    if (game.ComputerChoice is Option.Rock)
                         return Outcome.Lose;
-                    if (computerChoice == Option.Scissors)
+                    if (game.ComputerChoice is Option.Scissors)
                         return Outcome.Draw;
-                    if (computerChoice == Option.Paper)
+                    if (game.ComputerChoice is Option.Paper)
                         return Outcome.Win;
                     break;
                 default:
@@ -111,204 +251,67 @@ namespace RockPaperScissors.Api
             return Outcome.Indeterminate;
         }
 
-        //private static void ComparePreviousGameAndAssignWeight()
-        //{
-        //    if(_PriorHumanChoices.Last().Outcome == Outcome.Win)
-        //    {
-        //        _OptionWeights[PickExpectedWinner(GetLastResult().userPick)] += 2;
-        //    }
-        //    else if(_PriorHumanChoices.Last().Outcome == Outcome.Lose)
-        //    {
-        //        _OptionWeights[PickExpectedWinner(PickExpectedWinner(GetLastResult().userPick))] += 2;
-        //    }
-        //}
-
-
-        //private static void CheckForImmediateRepeatsAndAddWeight()
-        //{
-        //    int numberOfRepeats = 0;
-        //    for(int i = _PriorHumanChoices.Count - 2; i >= 0; i--)
-        //    {
-        //        if(_PriorHumanChoices[i].UserPick == _PriorHumanChoices.Last().UserPick)
-        //        {
-        //            numberOfRepeats++;
-        //        }
-        //    }
-        //    switch (numberOfRepeats)
-        //    {
-        //        case 0:
-        //            break;
-        //        case 1:
-        //            _OptionWeights[GetLastResult().userPick] += 1;
-        //            break;
-        //        case 2:
-        //            _OptionWeights[GetLastResult().userPick] += 2;
-        //            break;
-        //        default:
-        //            _OptionWeights[GetLastResult().userPick] += 3;
-        //            break;
-        //    }
-        //}
-
-        //private static void CheckForNumberOfPicksAndAssignWeight()
-        //{
-        //    var totalCount = _PriorHumanChoices.Count;
-        //    var rockCount = _PriorHumanChoices.FindAll(c => c.UserPick == Option.Rock).Count;
-        //    var paperCount = _PriorHumanChoices.FindAll(c => c.UserPick == Option.Paper).Count;
-        //    var scissorsCount = _PriorHumanChoices.FindAll(c => c.UserPick == Option.Scissors).Count;
-        //    // Probably could eventually do more logic around here by looking at how much more one option is picked over others
-        //    if (rockCount > paperCount && rockCount > scissorsCount)
-        //        _OptionWeights[Option.Rock] += 1;
-        //    if (paperCount > rockCount && paperCount > scissorsCount)
-        //        _OptionWeights[Option.Paper] += 1;
-        //    if (scissorsCount > paperCount && scissorsCount > rockCount)
-        //        _OptionWeights[Option.Scissors] += 1;
-        //}
-
-
-
-        //private static Option PickExpectedWinner(Option expectedUserSelection)
-        //{
-        //    switch (expectedUserSelection)
-        //    {
-        //        case Option.Rock:
-        //            return Option.Paper;
-        //        case Option.Paper:
-        //            return Option.Scissors;
-        //        case Option.Scissors:
-        //            return Option.Rock;
-        //        default:
-        //            throw new ArgumentException("No expected user selection passed into ");
-        //    }
-        //}
-
-
-
-        //private static (Option userPick, Outcome outcome) GetLastResult()
-        //{
-        //    if (_PriorHumanChoices.Count > 0)
-        //    {
-        //        return _PriorHumanChoices[_PriorHumanChoices.Count - 1];
-        //    }
-        //    throw new ArgumentException("Attempted to invoke GetLastResult() when there were no existing results");
-        //}
-
         public static Option Decision()
         {
-            OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
-            // Eventually check for pattern recognition... E.G.:
-            // If user plays R(W), then weight P + 1
-            // If user plays R(W), R(W), then weight P + 2
-            // If user playls R(L), then weight R + 1
-            // If user plays R(L), R(L), then weight R + 2
-            // If user plays R(W), S(L), R(W), then weight P + 1
-            // If user plays R(W), S(L), R(L), then weight R + 2? Same as option 3?
-            // What's the max sample size needed?
-
-            //ComparePreviousGameAndAssignWeight();
-            CheckForPatternsAndAssignWeight();
-            //CheckForImmediateRepeatsAndAddWeight();
-            //CheckForNumberOfPicksAndAssignWeight();
-
-            List<KeyValuePair<Option, int>> results = OptionWeights.OrderByDescending(k => k.Value).ToList();
-
-            if (results[0].Value == results[1].Value && results[1].Value == results[2].Value)
+            var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
+            if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
             {
-                //Instead of this, how about assigning a small random value to each weight?
-                return RandomComputerPick();
+                for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+                {
+                    segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
+                }
+            }
+            else
+            {
+                segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
             }
 
-            return results.First().Key;
+            List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
+            var tempList = _TrainingModel;
+            foreach (var seg in segments)
+            {
+                for (int i = 0; i < seg.Count; i++)
+                {
+                    tempList.RemoveAll(m => m[i] != seg[i]);
 
-            // If no pattern, and count > some value OR the last play was a loss...
-            //if (GetLastResult().outcome == Outcome.Lose)
-            //{
-            //    return PickExpectedWinner(PickExpectedWinner(GetLastResult().userPick));
-            //}
+                }
+            }
 
-            //return RandomDecision();
+            Option computerPick;
+            // Basically, if our training model doesn't have enough data yet, default to random pick.
+            // Probably not the best idea, but... here we are.
+            if (tempList.Count == 0)
+            {
+                computerPick = RandomPick();
+            }
+            else if (tempList.Count == 1)
+            {
+                //return tempList[0]. ??? Parse the segment to determine winner.
+                // E.G. If we're on game 2, pick the game 3 option?
+                computerPick = RandomPick();
+            }
+            else
+            {
+                // Randomly choose one of the segments?
+                // Then if we're on game 2 of a series, pick the game 3 option?
+                computerPick = RandomPick();
+            }
+
+            // Add prior human choice segments to training model here
+            return RandomPick();
         }
 
-        public static void CheckForPatternsAndAssignWeight()
+        private static Option RandomPick()
         {
-            var segments = new List<List<(Option UserPick, Outcome Outcome)>>();
-            for (int i = 0; i < PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+            int rand = new Random()
+                .Next(3);
+            return rand switch
             {
-                var group = new List<(Option UserChoice, Outcome Outcome)>();
-
-                for (int j = 0; j < _IterationsToAnalyzeForPattern; j++)
-                {
-                    if (PriorHumanChoices.Count <= i + j)
-                    {
-                        break;
-                    }
-                    group.Add((PriorHumanChoices[i + j].UserPick, PriorHumanChoices[i + j].Outcome));
-                }
-
-                segments.Add(group);
-            }
-
-            // Another option: take most recent segment, and compare against each of the prior segments
-            // Assign weights that way
-
-            // Another option: write methods for most common strategies and randomly pick one eaach game
-            // Common strategies: 
-            // Pick whatever beats what just beat you and stay with winning pick
-            // Pick the same as what just beat you
-
-            // Iterate over segments and add weights based on the chunks of 3 likelihood for victory
-            // Maybe increase weights the closer to the most recent game?
-            // Apply weights to current iteration and make decision for next game
-
-            // Could probably increase efficiency here by not re-analyzing games we've already analyzed.
-            // Also, this disproportionally weights in favor of repeats instead of victories/losses
-            int gamesAnalyzed = 1;
-            foreach (var group in segments)
-            {
-                foreach (var r in group)
-                {
-                    gamesAnalyzed++;
-                    OptionWeights[PickWinningOption(r.UserPick)] += 1;
-                    if (r.Outcome == Outcome.Win)
-                    {
-                        OptionWeights[PickWinningOption(r.UserPick)] += (1 * gamesAnalyzed);
-                    }
-                    else if (r.Outcome == Outcome.Lose)
-                    {
-                        OptionWeights[PickWinningOption(PickWinningOption(r.UserPick))] += (1 * gamesAnalyzed);
-                    }
-                    // calculate repeat usage
-                    // calculate last victory
-                    // calculate average usage
-
-                    // Assign small amount of randomness?
-                }
-            }
-
-
-
-
-
-            //if(_PriorHumanChoices.Count == 0)
-            //{
-            //    return;
-            //}
-
-            //if(_PriorHumanChoices.Count < 3)
-            //{
-            //    if (_PriorHumanChoices.Last().Outcome == Outcome.Win)
-            //    {
-            //        _OptionWeights[PickExpectedWinner(_PriorHumanChoices.Last().UserPick)] += 2;
-            //    }
-            //    else if (_PriorHumanChoices.Last().Outcome == Outcome.Lose)
-            //    {
-            //        _OptionWeights[PickExpectedWinner(PickExpectedWinner(_PriorHumanChoices.Last().UserPick))] += 2;
-            //    }
-            //    return;
-            //}
-
-            // Probably break history down into chunks of four or five, and look for patterns that way instead of analyzing whole list?
-
+                0 => Option.Rock,
+                1 => Option.Paper,
+                2 => Option.Scissors,
+                _ => Option.Rock,
+            };
         }
 
         private static Option PickWinningOption(Option userSelection)
@@ -318,33 +321,24 @@ namespace RockPaperScissors.Api
                 Option.Rock => Option.Paper,
                 Option.Paper => Option.Scissors,
                 Option.Scissors => Option.Rock,
-                _ => throw new ArgumentException("No expected user selection passed into "),
+                _ => Option.Invalid
             };
         }
 
-        public static void RecordOutcome(Option humanChoice, Outcome gameResult)
-        {
-            PriorHumanChoices.Add((humanChoice, gameResult));
-        }
+        // Need to train the program with useful data. E.G.
+        // R - W
+        // R - L
+        // S - W
 
-        private static Dictionary<Option, int> OptionWeights { get; set; }
-        private static readonly int _IterationsToAnalyzeForPattern = 3;
-        private static List<(Option UserPick, Outcome Outcome)> PriorHumanChoices { get; set; } = new List<(Option, Outcome)>();
-    }
+        // R - W
+        // R - L
+        // S - L
 
-    public enum Option
-    {
-        Invalid,
-        Rock,
-        Paper,
-        Scissors
-    }
-
-    public enum Outcome
-    {
-        Indeterminate,
-        Win,
-        Lose,
-        Draw
+        // S - W
+        // etc.
+        // THEN, on game 1, choose random
+        // On game 2, compare the first choice with the training segments and pick ones that started the same. Then... randomly pick one?
+        // On game 3, compare the first two choices with segments and pick ones, same as above.
+        // After game 3, replace or add to the training model? Probably add.
     }
 }
