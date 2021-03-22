@@ -288,6 +288,9 @@ namespace RockPaperScissors.Api
             {
                 //return tempList[0]. ??? Parse the segment to determine winner.
                 // E.G. If we're on game 2, pick the game 3 option?
+                // IDEA: instead of breaking the player history and training model down into chunks,
+                // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
+                // That *might* be good enough for demo purposes.
                 computerPick = RandomPick();
             }
             else
