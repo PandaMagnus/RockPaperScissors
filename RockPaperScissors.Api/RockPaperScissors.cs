@@ -23,7 +23,7 @@ namespace RockPaperScissors.Api
 
     public static class RockPaperScissors
     {
-        private static Dictionary<Option, int> _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
+        //private static Dictionary<Option, int> _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
         private static readonly int _IterationsToAnalyzeForPattern = 3;
         private static List<(Option PlayerPick, Outcome Outcome)> _PriorHumanChoices = new List<(Option, Outcome)>();
         private static List<List<(Option PlayerPick, Outcome Outcome)>> _TrainingModel = new List<List<(Option PlayerPick, Outcome Outcome)>>();
@@ -31,7 +31,9 @@ namespace RockPaperScissors.Api
 
         // Probably extract these adds out for clarity
         // Also figure out how to configure this for games that last for other than 3 turns
-        // Also find a better way to do this other than hard coding. Maybe play something like 1,000 random choice games?
+        // Also find a better way to do this other than hard coding. Maybe play something like 1,000 random choice games and then replace as real games are played?
+        // Or have two different training sets, one for best of 3 and one for best of 5?
+        // Or, hell, a combination... a dataset that mixes of best of 1, best of 3, best of 5, best of 7, etc.
         static RockPaperScissors()
         {
             _TrainingModel.Add(
@@ -203,6 +205,7 @@ namespace RockPaperScissors.Api
         private static Option DetermineComputerChoice()
         {
             Option decision;
+            // Don't need this if statement. Just call the logic directly.
             if (_PriorHumanChoices.Count == 0)
             {
                 decision = RandomPick();
@@ -213,6 +216,73 @@ namespace RockPaperScissors.Api
             }
 
             return decision;
+        }
+
+
+        // Don't need this method. Just handle it as part of determining the computer choice.
+        public static Option Decision()
+        {
+            var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
+            if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
+            {
+                for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+                {
+                    // if _PriorHumanChoices.Count < index + _IterationsToAnalyzeForPattern then return
+                    segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
+                }
+            }
+            else
+            {
+                segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
+            }
+
+            List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
+            foreach (var seg in segments)
+            {
+                trainingSegments.AddRange(_TrainingModel.Where(tm => tm.Take(seg.Count).SequenceEqual(seg)).ToList());
+            }
+
+            Option computerPick;
+            // Basically, if our training model doesn't have enough data yet, default to random pick.
+            // Probably not the best idea, but... here we are.
+            if (trainingSegments.Count == 0)
+            {
+                computerPick = RandomPick();
+            }
+            else if (trainingSegments.Count == 1)
+            {
+                //return tempList[0]. ??? Parse the segment to determine winner.
+                // E.G. If we're on game 2, pick the game 3 option?
+                // IDEA: instead of breaking the player history and training model down into chunks,
+                // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
+                // That *might* be good enough for demo purposes.
+                computerPick = trainingSegments[0][segments[0].Count + 1].PlayerPick;
+                //computerPick = RandomPick();
+                //var c = segments.Last().Count;
+            }
+            else
+            {
+                // Randomly choose one of the segments?
+                // Or calculate probability of winning based off all available training segments
+                // Then if we're on game 2 of a series, pick the game 3 option?
+                computerPick = RandomPick();
+            }
+
+            // Add prior human choice segments to training model here
+            return computerPick;
+        }
+
+        private static Option RandomPick()
+        {
+            int rand = new Random()
+                .Next(3);
+            return rand switch
+            {
+                0 => Option.Rock,
+                1 => Option.Paper,
+                2 => Option.Scissors,
+                _ => Option.Rock,
+            };
         }
 
         private static Outcome DetermineIfPlayerWon(Game game)
@@ -251,72 +321,6 @@ namespace RockPaperScissors.Api
             return Outcome.Indeterminate;
         }
 
-        public static Option Decision()
-        {
-            var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
-            if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
-            {
-                for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
-                {
-                    segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
-                }
-            }
-            else
-            {
-                segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
-            }
-
-            List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
-            var tempList = _TrainingModel;
-            foreach (var seg in segments)
-            {
-                for (int i = 0; i < seg.Count; i++)
-                {
-                    tempList.RemoveAll(m => m[i] != seg[i]);
-
-                }
-            }
-
-            Option computerPick;
-            // Basically, if our training model doesn't have enough data yet, default to random pick.
-            // Probably not the best idea, but... here we are.
-            if (tempList.Count == 0)
-            {
-                computerPick = RandomPick();
-            }
-            else if (tempList.Count == 1)
-            {
-                //return tempList[0]. ??? Parse the segment to determine winner.
-                // E.G. If we're on game 2, pick the game 3 option?
-                // IDEA: instead of breaking the player history and training model down into chunks,
-                // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
-                // That *might* be good enough for demo purposes.
-                computerPick = RandomPick();
-            }
-            else
-            {
-                // Randomly choose one of the segments?
-                // Then if we're on game 2 of a series, pick the game 3 option?
-                computerPick = RandomPick();
-            }
-
-            // Add prior human choice segments to training model here
-            return RandomPick();
-        }
-
-        private static Option RandomPick()
-        {
-            int rand = new Random()
-                .Next(3);
-            return rand switch
-            {
-                0 => Option.Rock,
-                1 => Option.Paper,
-                2 => Option.Scissors,
-                _ => Option.Rock,
-            };
-        }
-
         private static Option PickWinningOption(Option userSelection)
         {
             return userSelection switch
@@ -327,21 +331,5 @@ namespace RockPaperScissors.Api
                 _ => Option.Invalid
             };
         }
-
-        // Need to train the program with useful data. E.G.
-        // R - W
-        // R - L
-        // S - W
-
-        // R - W
-        // R - L
-        // S - L
-
-        // S - W
-        // etc.
-        // THEN, on game 1, choose random
-        // On game 2, compare the first choice with the training segments and pick ones that started the same. Then... randomly pick one?
-        // On game 3, compare the first two choices with segments and pick ones, same as above.
-        // After game 3, replace or add to the training model? Probably add.
     }
 }
