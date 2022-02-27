@@ -23,20 +23,29 @@ namespace RockPaperScissors.Api
 
     public static class RockPaperScissors
     {
-        //private static Dictionary<Option, int> _OptionWeights = new Dictionary<Option, int> { { Option.Rock, 0 }, { Option.Paper, 0 }, { Option.Scissors, 0 } };
         private static readonly int _IterationsToAnalyzeForPattern = 3;
-        private static List<(Option PlayerPick, Outcome Outcome)> _PriorHumanChoices = new List<(Option, Outcome)>();
-        private static List<List<(Option PlayerPick, Outcome Outcome)>> _TrainingModel = new List<List<(Option PlayerPick, Outcome Outcome)>>();
-        //private static List<(Option PlayerPick, Outcome Outcome)[]> _TrainingModel = new List<(Option PlayerPick, Outcome Outcome)[]>();
+
+        // Does IIS parallelize this correctly? Or does this need to be an instance?
+        // Also, do we need to keep track of outcome?
+        // Presumably the pattern is to guess the player's next choice, regardless of outcome from prior games.
+        private static List<(Option PlayerPick, Outcome Outcome)> _PriorHumanChoices = new List<(Option, Outcome)>(); 
+        private static List<List<(Option PlayerPick, Outcome Outcome)>> _SingleGameModel = new(); // Is this worth it? Seems like random chance might be most straighforward. UNLESS a player likes to play one option... A LOT. And then randomly picking from here would weight towards beating that.
+        private static List<List<(Option PlayerPick, Outcome Outcome)>> _BestOfThreeModel = new();
+        private static List<List<(Option PlayerPick, Outcome Outcome)>> _BestOfFiveModel = new();
+        private static bool _SetComplete; // Does IIS parallelize this correctly? Or does this need to be an instance?
 
         // Probably extract these adds out for clarity
         // Also figure out how to configure this for games that last for other than 3 turns
         // Also find a better way to do this other than hard coding. Maybe play something like 1,000 random choice games and then replace as real games are played?
-        // Or have two different training sets, one for best of 3 and one for best of 5?
-        // Or, hell, a combination... a dataset that mixes of best of 1, best of 3, best of 5, best of 7, etc.
+        // Or have three different training sets, one for single games, best of 3 and best of 5?
+        // Or, hell, a combination... a dataset that mixes of best of 1, best of 3, best of 5, best of 7, etc.?
         static RockPaperScissors()
         {
-            _TrainingModel.Add(
+            // Check the performance impact of Tuples. May be more performant to use a list of KeyValue pairs?
+            // Although we'd have to assess how important performance is for this.
+            // Also, does _TrainingModel need to be a List<List<>>? Seems like we could use something faster for the outer one like a HashSet or Dictionary if we don't duplicate game results.
+            // OR do we ditch that altogether? Is there a better way to handle this that doesn't also require the number of games specified in a set?
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Rock, Outcome.Win),
@@ -44,7 +53,7 @@ namespace RockPaperScissors.Api
                     (Option.Scissors, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Rock, Outcome.Win),
@@ -52,7 +61,7 @@ namespace RockPaperScissors.Api
                     (Option.Scissors, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Rock, Outcome.Lose),
@@ -60,7 +69,7 @@ namespace RockPaperScissors.Api
                     (Option.Scissors, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Rock, Outcome.Draw),
@@ -68,7 +77,7 @@ namespace RockPaperScissors.Api
                     (Option.Rock, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Rock, Outcome.Draw),
@@ -76,7 +85,7 @@ namespace RockPaperScissors.Api
                     (Option.Scissors, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Paper, Outcome.Win),
@@ -84,7 +93,7 @@ namespace RockPaperScissors.Api
                     (Option.Rock, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Paper, Outcome.Win),
@@ -92,7 +101,7 @@ namespace RockPaperScissors.Api
                     (Option.Rock, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Paper, Outcome.Lose),
@@ -100,7 +109,7 @@ namespace RockPaperScissors.Api
                     (Option.Rock, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Paper, Outcome.Draw),
@@ -108,7 +117,7 @@ namespace RockPaperScissors.Api
                     (Option.Paper, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Paper, Outcome.Draw),
@@ -116,7 +125,7 @@ namespace RockPaperScissors.Api
                     (Option.Rock, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Scissors, Outcome.Win),
@@ -124,7 +133,7 @@ namespace RockPaperScissors.Api
                     (Option.Paper, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Scissors, Outcome.Win),
@@ -132,7 +141,7 @@ namespace RockPaperScissors.Api
                     (Option.Paper, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Scissors, Outcome.Lose),
@@ -140,7 +149,7 @@ namespace RockPaperScissors.Api
                     (Option.Paper, Outcome.Win)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Scissors, Outcome.Draw),
@@ -148,7 +157,7 @@ namespace RockPaperScissors.Api
                     (Option.Scissors, Outcome.Lose)
                 }
             );
-            _TrainingModel.Add(
+            _BestOfThreeModel.Add(
                 new List<(Option PlayerPick, Outcome Outcome)>
                 {
                     (Option.Scissors, Outcome.Draw),
@@ -198,75 +207,99 @@ namespace RockPaperScissors.Api
                 game.GameResult = "Sorry, the computer won. Please try again!";
             }
 
+            // if(SetIsComplete)
+            // {
+            //    _PriorHumanChoices = new();
+            // }
             _PriorHumanChoices.Add((game.PlayerChoice, didPlayerWin));
+            //_BestOfThreeModel.Add((game.PlayerChoice, didPlayerWin));
             return game;
         }
 
         private static Option DetermineComputerChoice()
         {
-            Option decision;
-            // Don't need this if statement. Just call the logic directly.
-            if (_PriorHumanChoices.Count == 0)
-            {
-                decision = RandomPick();
-            }
-            else
-            {
-                decision = Decision();
-            }
-
-            return decision;
+            return Decision();
         }
 
 
         // Don't need this method. Just handle it as part of determining the computer choice.
         public static Option Decision()
         {
-            var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
-            if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
+            Option computerPick = Option.Invalid;
+
+            if (_PriorHumanChoices.Count is 0)
             {
-                for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+                computerPick = RandomPick();
+            }
+            else
+            {
+                // if(game.BestOf == 3)
+                List<List<(Option PlayerPick, Outcome Outcome)>> possibleSegments = new();
+                possibleSegments.AddRange(_BestOfThreeModel.Where(m => m.Take(_PriorHumanChoices.Count).SequenceEqual(_PriorHumanChoices)).ToList());
+                if(possibleSegments.Count is 0)
                 {
-                    // if _PriorHumanChoices.Count < index + _IterationsToAnalyzeForPattern then return
-                    segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
+                    // Does this make sense if there's not enough training data?
+                    computerPick = RandomPick();
+                }
+                else
+                {
+                    // Would it be worth weighting *these* instead of random choice?
+                    int rand = new Random().Next(0, possibleSegments.Count);
+                    var guessNextPick = possibleSegments[rand][_PriorHumanChoices.Count];
+                    computerPick = PickWinningOption(guessNextPick.PlayerPick);
                 }
             }
-            else
-            {
-                segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
-            }
 
-            List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
-            foreach (var seg in segments)
-            {
-                trainingSegments.AddRange(_TrainingModel.Where(tm => tm.Take(seg.Count).SequenceEqual(seg)).ToList());
-            }
 
-            Option computerPick;
-            // Basically, if our training model doesn't have enough data yet, default to random pick.
-            // Probably not the best idea, but... here we are.
-            if (trainingSegments.Count == 0)
-            {
-                computerPick = RandomPick();
-            }
-            else if (trainingSegments.Count == 1)
-            {
-                //return tempList[0]. ??? Parse the segment to determine winner.
-                // E.G. If we're on game 2, pick the game 3 option?
-                // IDEA: instead of breaking the player history and training model down into chunks,
-                // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
-                // That *might* be good enough for demo purposes.
-                computerPick = trainingSegments[0][segments[0].Count + 1].PlayerPick;
-                //computerPick = RandomPick();
-                //var c = segments.Last().Count;
-            }
-            else
-            {
-                // Randomly choose one of the segments?
-                // Or calculate probability of winning based off all available training segments
-                // Then if we're on game 2 of a series, pick the game 3 option?
-                computerPick = RandomPick();
-            }
+
+
+            // Instead of all this, should we just append human choices to the training model?
+            // Maybe drop one hard-coded one from the list?
+            //var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
+            //if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
+            //{
+            //    for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
+            //    {
+            //        // if _PriorHumanChoices.Count < index + _IterationsToAnalyzeForPattern then return
+            //        segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
+            //    }
+            //}
+            //else
+            //{
+            //    segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
+            //}
+
+            //List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
+            //foreach (var seg in segments)
+            //{
+            //    trainingSegments.AddRange(_BestOfThreeModel.Where(tm => tm.Take(seg.Count).SequenceEqual(seg)).ToList());
+            //}
+
+            
+            //// Basically, if our training model doesn't have enough data yet, default to random pick.
+            //// Probably not the best idea, but... here we are.
+            //if (trainingSegments.Count == 0)
+            //{
+            //    computerPick = RandomPick();
+            //}
+            //else if (trainingSegments.Count == 1)
+            //{
+            //    //return tempList[0]. ??? Parse the segment to determine winner.
+            //    // E.G. If we're on game 2, pick the game 3 option?
+            //    // IDEA: instead of breaking the player history and training model down into chunks,
+            //    // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
+            //    // That *might* be good enough for demo purposes.
+            //    computerPick = trainingSegments[0][segments[0].Count + 1].PlayerPick;
+            //    //computerPick = RandomPick();
+            //    //var c = segments.Last().Count;
+            //}
+            //else
+            //{
+            //    // Randomly choose one of the segments?
+            //    // Or calculate probability of winning based off all available training segments
+            //    // Then if we're on game 2 of a series, pick the game 3 option?
+            //    computerPick = RandomPick();
+            //}
 
             // Add prior human choice segments to training model here
             return computerPick;

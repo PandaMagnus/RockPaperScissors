@@ -1,4 +1,5 @@
 ﻿using RockPaperScissors.Api;
+using RockPaperScissors.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,7 +31,16 @@ namespace RockPaperScissors.Tests
         [InlineData(" ", Option.Invalid)]
         public void ValidateUserChoice(string playerInput, Option expectedResult)
         {
-            Assert.Equal(expectedResult, RockPaperScissors.Api.RockPaperScissors.ValidatePlayerInput(playerInput));
+            Assert.Equal(expectedResult, Api.RockPaperScissors.ValidatePlayerInput(playerInput));
+        }
+
+        [Fact]
+        public void Test()
+        {
+            Game g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
+            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
+            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
+            Assert.NotNull(g);
         }
     }
 }

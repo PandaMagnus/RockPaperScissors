@@ -12,6 +12,8 @@ namespace RockPaperScissors.Api.Models
         public Option ComputerChoice { get; set; }
         [JsonPropertyName("gameResult")]
         public string GameResult { get; set; }
+        [JsonPropertyName("setResult")]
+        public string SetResult { get; set; }
         [JsonPropertyName("errorMessage")]
         public string ErrorMessage { get; set; }
     }
