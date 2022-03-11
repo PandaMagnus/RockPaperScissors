@@ -37,9 +37,13 @@ namespace RockPaperScissors.Tests
         [Fact]
         public void Test()
         {
-            Game g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
-            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
-            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = Option.Rock });
+            Random rand = new();
+            int randPick = rand.Next(1, 3);
+            Game g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
+            randPick = rand.Next(1, 3);
+            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
+            randPick = rand.Next(1, 3);
+            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
             Assert.NotNull(g);
         }
     }

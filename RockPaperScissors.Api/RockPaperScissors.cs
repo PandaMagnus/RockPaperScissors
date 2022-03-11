@@ -28,11 +28,26 @@ namespace RockPaperScissors.Api
         // Does IIS parallelize this correctly? Or does this need to be an instance?
         // Also, do we need to keep track of outcome?
         // Presumably the pattern is to guess the player's next choice, regardless of outcome from prior games.
-        private static List<(Option PlayerPick, Outcome Outcome)> _PriorHumanChoices = new List<(Option, Outcome)>(); 
-        private static List<List<(Option PlayerPick, Outcome Outcome)>> _SingleGameModel = new(); // Is this worth it? Seems like random chance might be most straighforward. UNLESS a player likes to play one option... A LOT. And then randomly picking from here would weight towards beating that.
-        private static List<List<(Option PlayerPick, Outcome Outcome)>> _BestOfThreeModel = new();
-        private static List<List<(Option PlayerPick, Outcome Outcome)>> _BestOfFiveModel = new();
+        private static List<(Option PlayerPick, Outcome PlayerOutcome)> _PriorHumanChoices = new List<(Option, Outcome)>(); 
+        private static List<List<(Option PlayerPick, Outcome PlayerOutcome)>> _SingleGameModel = new(); // Is this worth it? Seems like random chance might be most straighforward. UNLESS a player likes to play one option... A LOT. And then randomly picking from here would weight towards beating that.
+        private static List<List<(Option PlayerPick, Outcome PlayerOutcome)>> _BestOfThreeModel = new();
+        private static List<List<(Option PlayerPick, Outcome PlayerOutcome)>> _BestOfFiveModel = new();
         private static bool _SetComplete; // Does IIS parallelize this correctly? Or does this need to be an instance?
+        // Eventually create a 3x3 array with the outcome with the player on the vertical axis as:
+        //      I   R   P   S
+        //  I   I   I   I   I
+        //  R   I   D   L   W
+        //  P   I   W   D   L
+        //  S   I   L   W   D
+        // NOTES:
+        //  I: Indeterminate
+        //  R: Rock
+        //  P: Paper
+        //  S: Scissors
+        //  W: Win
+        //  L: Loss
+        //  D: Draw
+        private static string[,] _Outcomes;
 
         // Probably extract these adds out for clarity
         // Also figure out how to configure this for games that last for other than 3 turns
@@ -41,6 +56,14 @@ namespace RockPaperScissors.Api
         // Or, hell, a combination... a dataset that mixes of best of 1, best of 3, best of 5, best of 7, etc.?
         static RockPaperScissors()
         {
+            _Outcomes = new string[4,4] 
+            { 
+                { "I", "I", "I", "I" }, 
+                { "I", "D", "L", "W" }, 
+                { "I", "W", "D", "L" }, 
+                { "I", "L", "W", "D" } 
+            };
+
             // Check the performance impact of Tuples. May be more performant to use a list of KeyValue pairs?
             // Although we'd have to assess how important performance is for this.
             // Also, does _TrainingModel need to be a List<List<>>? Seems like we could use something faster for the outer one like a HashSet or Dictionary if we don't duplicate game results.
@@ -225,81 +248,34 @@ namespace RockPaperScissors.Api
         // Don't need this method. Just handle it as part of determining the computer choice.
         public static Option Decision()
         {
-            Option computerPick = Option.Invalid;
+            Option computerPick = RandomPick();
 
-            if (_PriorHumanChoices.Count is 0)
-            {
-                computerPick = RandomPick();
-            }
-            else
+            List<List<(Option PlayerPick, Outcome PlayerOutcome)>> possibleSegments = new();
+            possibleSegments.AddRange(_BestOfThreeModel.Where(m => m.Take(_PriorHumanChoices.Count).SequenceEqual(_PriorHumanChoices)).ToList());
+
+            //if(_PriorHumanChoices.Count is 1)
+            //{
+            //    computerPick = 
+            //}
+            if (_PriorHumanChoices.Count > 0)
             {
                 // if(game.BestOf == 3)
-                List<List<(Option PlayerPick, Outcome Outcome)>> possibleSegments = new();
-                possibleSegments.AddRange(_BestOfThreeModel.Where(m => m.Take(_PriorHumanChoices.Count).SequenceEqual(_PriorHumanChoices)).ToList());
-                if(possibleSegments.Count is 0)
-                {
-                    // Does this make sense if there's not enough training data?
-                    computerPick = RandomPick();
-                }
-                else
+                
+                if (possibleSegments.Count > 0)
                 {
                     // Would it be worth weighting *these* instead of random choice?
-                    int rand = new Random().Next(0, possibleSegments.Count);
-                    var guessNextPick = possibleSegments[rand][_PriorHumanChoices.Count];
+                    // As a hacky version, if we come up with an example where the player won, go ahead and re-try
+                    Random rand = new();
+                    int randPick = rand.Next(0, possibleSegments.Count);
+                    var guessNextPick = possibleSegments[randPick][_PriorHumanChoices.Count];
+                    if(guessNextPick.PlayerOutcome is Outcome.Win)
+                    {
+                        randPick = rand.Next(0, possibleSegments.Count);
+                        guessNextPick = possibleSegments[randPick][_PriorHumanChoices.Count];
+                    }
                     computerPick = PickWinningOption(guessNextPick.PlayerPick);
                 }
             }
-
-
-
-
-            // Instead of all this, should we just append human choices to the training model?
-            // Maybe drop one hard-coded one from the list?
-            //var segments = new List<List<(Option PlayerPick, Outcome Outcome)>>();
-            //if (_PriorHumanChoices.Count >= _IterationsToAnalyzeForPattern)
-            //{
-            //    for (int i = 0; i < _PriorHumanChoices.Count; i += _IterationsToAnalyzeForPattern)
-            //    {
-            //        // if _PriorHumanChoices.Count < index + _IterationsToAnalyzeForPattern then return
-            //        segments.Add(_PriorHumanChoices.GetRange(i, _IterationsToAnalyzeForPattern));
-            //    }
-            //}
-            //else
-            //{
-            //    segments.Add(_PriorHumanChoices.GetRange(0, _PriorHumanChoices.Count));
-            //}
-
-            //List<List<(Option PlayerPick, Outcome Outcome)>> trainingSegments = new();
-            //foreach (var seg in segments)
-            //{
-            //    trainingSegments.AddRange(_BestOfThreeModel.Where(tm => tm.Take(seg.Count).SequenceEqual(seg)).ToList());
-            //}
-
-            
-            //// Basically, if our training model doesn't have enough data yet, default to random pick.
-            //// Probably not the best idea, but... here we are.
-            //if (trainingSegments.Count == 0)
-            //{
-            //    computerPick = RandomPick();
-            //}
-            //else if (trainingSegments.Count == 1)
-            //{
-            //    //return tempList[0]. ??? Parse the segment to determine winner.
-            //    // E.G. If we're on game 2, pick the game 3 option?
-            //    // IDEA: instead of breaking the player history and training model down into chunks,
-            //    // Maybe just use this to match n number of matches, and once that data is obtained we can just pick whatever is next in the training model.
-            //    // That *might* be good enough for demo purposes.
-            //    computerPick = trainingSegments[0][segments[0].Count + 1].PlayerPick;
-            //    //computerPick = RandomPick();
-            //    //var c = segments.Last().Count;
-            //}
-            //else
-            //{
-            //    // Randomly choose one of the segments?
-            //    // Or calculate probability of winning based off all available training segments
-            //    // Then if we're on game 2 of a series, pick the game 3 option?
-            //    computerPick = RandomPick();
-            //}
 
             // Add prior human choice segments to training model here
             return computerPick;
@@ -321,37 +297,52 @@ namespace RockPaperScissors.Api
         private static Outcome DetermineIfPlayerWon(Game game)
         {
             // Feels like this might be able to be done more efficiently
+            //switch (game.PlayerChoice)
+            //{
+            //    case Option.Rock:
+            //        if (game.ComputerChoice is Option.Rock)
+            //            return Outcome.Draw;
+            //        if (game.ComputerChoice is Option.Scissors)
+            //            return Outcome.Win;
+            //        if (game.ComputerChoice is Option.Paper)
+            //            return Outcome.Lose;
+            //        break;
+            //    case Option.Paper:
+            //        if (game.ComputerChoice is Option.Rock)
+            //            return Outcome.Win;
+            //        if (game.ComputerChoice is Option.Scissors)
+            //            return Outcome.Lose;
+            //        if (game.ComputerChoice is Option.Paper)
+            //            return Outcome.Draw;
+            //        break;
+            //    case Option.Scissors:
+            //        if (game.ComputerChoice is Option.Rock)
+            //            return Outcome.Lose;
+            //        if (game.ComputerChoice is Option.Scissors)
+            //            return Outcome.Draw;
+            //        if (game.ComputerChoice is Option.Paper)
+            //            return Outcome.Win;
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            switch (game.PlayerChoice)
+
+            //int playerChoice = (int)game.PlayerChoice;
+            //int computerChoice = (int)game.ComputerChoice;
+
+            // Subtract one since 0 in the enum is Invalid
+            var result = _Outcomes[(int)game.PlayerChoice, (int)game.ComputerChoice];
+            return result.ToUpperInvariant() switch
             {
-                case Option.Rock:
-                    if (game.ComputerChoice is Option.Rock)
-                        return Outcome.Draw;
-                    if (game.ComputerChoice is Option.Scissors)
-                        return Outcome.Win;
-                    if (game.ComputerChoice is Option.Paper)
-                        return Outcome.Lose;
-                    break;
-                case Option.Paper:
-                    if (game.ComputerChoice is Option.Rock)
-                        return Outcome.Win;
-                    if (game.ComputerChoice is Option.Scissors)
-                        return Outcome.Lose;
-                    if (game.ComputerChoice is Option.Paper)
-                        return Outcome.Draw;
-                    break;
-                case Option.Scissors:
-                    if (game.ComputerChoice is Option.Rock)
-                        return Outcome.Lose;
-                    if (game.ComputerChoice is Option.Scissors)
-                        return Outcome.Draw;
-                    if (game.ComputerChoice is Option.Paper)
-                        return Outcome.Win;
-                    break;
-                default:
-                    break;
-            }
-            return Outcome.Indeterminate;
+                "I" => Outcome.Indeterminate,
+                "W" => Outcome.Win,
+                "L" => Outcome.Lose,
+                "D" => Outcome.Draw,
+                _ => Outcome.Indeterminate
+            };
+
+            //return Outcome.Indeterminate;
         }
 
         private static Option PickWinningOption(Option userSelection)
