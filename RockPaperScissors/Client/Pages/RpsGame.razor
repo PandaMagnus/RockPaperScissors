@@ -1,0 +1,48 @@
+﻿@page "/rps"
+@using System.Text.Json;
+@using System.Net.Http
+@using RockPaperScissors.Shared;
+@inject HttpClient Http
+
+<h3>RPS</h3>
+
+<p>
+    <div>
+        <label data-testid="result">Game outcome:</label>
+        <label data-testid="result">@(gameModel.GameResult ?? "Awaiting player input...")</label> <!-- This could probably just be set in the game model instead of null coalescing here. -->
+    </div>
+</p>
+
+<div>
+    <label>Make your choice:</label>
+
+    <EditForm Model="@playerModel" OnValidSubmit="SendUserChoice" data-testid="submit-choice-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText data-testid="player-input" @bind-Value="playerModel.PlayerInput" />
+
+        <button data-testid="submit-input-btn" class="btn btn-primary" type="submit">Play RPS</button>
+    </EditForm>
+</div>
+<div>
+    @if (string.IsNullOrWhiteSpace(gameModel.ComputerChoice.ToString()))
+    {
+        <p><em>Computer has not made a decision yet</em></p>
+    }
+    else
+    {
+        <p id="computer-choice"><em>Computer Picks: @gameModel.ComputerChoice</em></p>
+    }
+</div>
+
+@code {
+    private Player playerModel = new();
+    private Game gameModel = new();
+
+    private async Task SendUserChoice()
+    {
+        ViewModel _Model = new(Http);
+        gameModel = await _Model.Play(playerModel, gameModel).ConfigureAwait(false);
+    }
+}
