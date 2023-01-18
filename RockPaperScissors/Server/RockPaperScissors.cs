@@ -211,6 +211,12 @@ public static class GameEngine
     // Don't need this method. Just handle it as part of determining the computer choice.
     public static Option Decision()
     {
+        // NOTE: This if statement circumvents a current bug.
+        // This code is in transition to allowing a configurable 'best of'.
+        // It's possible to go over the (currently) only supported best of 3.
+        // This scenario results in an argument out of range error.
+
+        if (_PriorHumanChoices.Count > 2) _PriorHumanChoices = new();
         Option computerPick = RandomPick();
 
         List<List<(Option PlayerPick, Outcome PlayerOutcome)>> possibleSegments = new();
@@ -228,6 +234,9 @@ public static class GameEngine
                 // E.G. If I play rock and comp plays paper, I'm more likely to play scissors in game 2.
                 Random rand = new();
                 int randPick = rand.Next(0, possibleSegments.Count);
+                
+                // There's a bug here: if we go four games in a row and still match on a possibleSegment,
+                // an ArgumentOutOfRange occurs. See above comments at start of this method.
                 var guessNextPick = possibleSegments[randPick][_PriorHumanChoices.Count];
                 if (guessNextPick.PlayerOutcome is Outcome.Win)
                 {
