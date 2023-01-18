@@ -1,7 +1,5 @@
-﻿using RockPaperScissors.Api;
-using RockPaperScissors.Api.Models;
-using System;
-using System.Collections.Generic;
+﻿using RockPaperScissors.Server;
+using RockPaperScissors.Shared;
 using Xunit;
 
 namespace RockPaperScissors.Tests
@@ -17,7 +15,7 @@ namespace RockPaperScissors.Tests
             {
                 Option randomPlayerPick = (Option)rand.Next(1, 3);
                 results.Add(
-                    Api.RockPaperScissors.ProcessPlayerInput(
+                    GameEngine.ProcessPlayerInput(
                         new Game { PlayerChoice = randomPlayerPick })
                     .ComputerChoice
                 );

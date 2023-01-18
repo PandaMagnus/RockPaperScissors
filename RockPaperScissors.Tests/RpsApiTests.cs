@@ -1,8 +1,5 @@
-﻿using RockPaperScissors.Api;
-using RockPaperScissors.Api.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using RockPaperScissors.Server;
+using RockPaperScissors.Shared;
 using Xunit;
 
 namespace RockPaperScissors.Tests
@@ -31,7 +28,7 @@ namespace RockPaperScissors.Tests
         [InlineData(" ", Option.Invalid)]
         public void ValidateUserChoice(string playerInput, Option expectedResult)
         {
-            Assert.Equal(expectedResult, Api.RockPaperScissors.ValidatePlayerInput(playerInput));
+            Assert.Equal(expectedResult, GameEngine.ValidatePlayerInput(playerInput));
         }
 
         [Fact]
@@ -39,11 +36,11 @@ namespace RockPaperScissors.Tests
         {
             Random rand = new();
             int randPick = rand.Next(1, 3);
-            Game g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
+            Game g = GameEngine.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
             randPick = rand.Next(1, 3);
-            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
+            g = GameEngine.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
             randPick = rand.Next(1, 3);
-            g = Api.RockPaperScissors.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
+            g = GameEngine.ProcessPlayerInput(new Game { PlayerChoice = (Option)randPick });
             Assert.NotNull(g);
         }
     }

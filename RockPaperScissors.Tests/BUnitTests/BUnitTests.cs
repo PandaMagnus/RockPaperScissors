@@ -1,10 +1,9 @@
 ﻿using Xunit;
 using Bunit;
-using BlazorServerApp.Pages;
 using System.Net.Http;
 using RockPaperScissors.Tests.Data;
 using Microsoft.Extensions.DependencyInjection;
-using AngleSharp.Dom;
+using RockPaperScissors.Client.Pages;
 
 namespace RockPaperScissors.Tests.BUnitTests
 {
@@ -14,7 +13,7 @@ namespace RockPaperScissors.Tests.BUnitTests
         public void InputBoxDoesNotInitializeAsAlert()
         {
             Services.AddSingleton<HttpClient, HttpClientFake>();
-            var comp = RenderComponent<RPS>();
+            var comp = RenderComponent<RpsGame>();
 
             Assert.Contains(@"class=""alert alert-info""", 
                 comp.Find(RpsPage.PlayerInput).ToMarkup());
@@ -24,7 +23,7 @@ namespace RockPaperScissors.Tests.BUnitTests
         public void SubmitButtonDoesNotInitializeAsAlert()
         {
             Services.AddSingleton<HttpClient, HttpClientFake>();
-            var comp = RenderComponent<RPS>();
+            var comp = RenderComponent<RpsGame>();
 
             Assert.Contains(@"class=""btn btn-primary""",
                 comp.Find(RpsPage.SubmitButton).ToMarkup());
@@ -34,7 +33,7 @@ namespace RockPaperScissors.Tests.BUnitTests
         public void BadInputMarksInputBoxAsAlert()
         {
             Services.AddSingleton<HttpClient, HttpClientFake>();
-            var comp = RenderComponent<RPS>();
+            var comp = RenderComponent<RpsGame>();
             comp.Find(RpsPage.PlayerInput).Change("bad_value");
             comp.Find(RpsPage.SubmitForm).Submit();
 
@@ -46,7 +45,7 @@ namespace RockPaperScissors.Tests.BUnitTests
         public void BadInputMarksSubmitButtonAsAlert()
         {
             Services.AddSingleton<HttpClient, HttpClientFake>();
-            var comp = RenderComponent<RPS>();
+            var comp = RenderComponent<RpsGame>();
             comp.Find(RpsPage.PlayerInput).Change("bad_value");
             comp.Find(RpsPage.SubmitForm).Submit();
 

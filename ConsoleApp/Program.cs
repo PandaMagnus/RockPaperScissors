@@ -1,7 +1,5 @@
-﻿using RockPaperScissors.Api;
-using RockPaperScissors.Api.Controllers;
-using RockPaperScissors.Api.Models;
-using System;
+﻿using ExampleBlazorApp.Server.Controllers;
+using RockPaperScissors.Shared;
 
 namespace ConsoleApp
 {

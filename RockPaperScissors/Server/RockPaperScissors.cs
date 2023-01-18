@@ -1,8 +1,8 @@
 ﻿using RockPaperScissors.Shared;
 
-namespace ExampleBlazorApp.Server;
+namespace RockPaperScissors.Server;
 
-public static class RockPaperScissors
+public static class GameEngine
 {
     // Perf test the List of List of Tuples.
     // May make sense to do tuning here and try out some faster collections.
@@ -18,7 +18,7 @@ public static class RockPaperScissors
     // Also find a better way to do this other than hard coding. Maybe play something like 1,000 random choice games and then replace as real games are played?
     // Or have three different sets, one for single games, best of 3 and best of 5?
     // Or, hell, a combination... a dataset that mixes of best of 1, best of 3, best of 5, best of 7, etc.?
-    static RockPaperScissors()
+    static GameEngine()
     {
         _Outcomes = new string[4, 4]
         {

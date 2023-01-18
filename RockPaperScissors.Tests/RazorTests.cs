@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using BlazorServerApp.Pages;
+﻿using RockPaperScissors.Client.Pages;
 using RockPaperScissors.Tests.Data;
 using Xunit;
 
@@ -11,7 +10,7 @@ namespace RockPaperScissors.Tests
         public async void PlayerSendsValidAndWinningChoiceGetsSuccessfulResultBack()
         {
             // Need way to mock out API. Probably override DI here?
-            var view = new BlazorServerApp.Pages.RPS();
+            var view = new RpsGame();
 
             var httpClient = view.GetType().GetProperty(
                 "Http",

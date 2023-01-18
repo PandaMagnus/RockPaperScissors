@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RockPaperScissors.Api\RockPaperScissors.Api.csproj" />
+    <ProjectReference Include="..\RockPaperScissors\Server\RockPaperScissors.Server.csproj" />
   </ItemGroup>
 
 </Project>

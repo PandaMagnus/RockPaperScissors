@@ -1,9 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace RockPaperScissors.Tests.Data
+﻿namespace RockPaperScissors.Tests.Data
 {
     public class HttpClientFake : HttpClient
     {

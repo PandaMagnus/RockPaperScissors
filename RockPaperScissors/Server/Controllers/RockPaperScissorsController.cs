@@ -1,5 +1,6 @@
 using RockPaperScissors.Shared;
 using Microsoft.AspNetCore.Mvc;
+using RockPaperScissors.Server;
 
 namespace ExampleBlazorApp.Server.Controllers;
 
@@ -18,7 +19,7 @@ public class RockPaperScissorsController : ControllerBase
     {
         var formattedChoice = new Game
         {
-            PlayerChoice = RockPaperScissors.ValidatePlayerInput(choice)
+            PlayerChoice = GameEngine.ValidatePlayerInput(choice)
         };
         if (formattedChoice.PlayerChoice is Option.Invalid)
         {
@@ -33,6 +34,6 @@ public class RockPaperScissorsController : ControllerBase
     [HttpPost("play")]
     public Game SendChoiceAsync([FromBody] Game content)
     {
-        return RockPaperScissors.ProcessPlayerInput(content);
+        return GameEngine.ProcessPlayerInput(content);
     }
 }

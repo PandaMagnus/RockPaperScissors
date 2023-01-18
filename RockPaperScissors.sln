@@ -5,19 +5,15 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Tests", "RockPaperScissors.Tests\RockPaperScissors.Tests.csproj", "{283324F3-9E6D-491E-8362-5ECF902DB3E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServerApp", "BlazorServerApp\BlazorServerApp.csproj", "{FFC66C29-9ED9-45E4-A294-04EA23A8C39A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VueApp", "VueApp\VueApp.csproj", "{CD7FD374-D4A6-486F-BAF3-0C5694002277}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Api", "RockPaperScissors.Api\RockPaperScissors.Api.csproj", "{801F29A2-4CE2-4E20-99D4-98E1BFCAC87F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{F6FCC88D-D9CA-427D-B171-287AF573191E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockPaperScissors.Server", "RockPaperScissors\Server\RockPaperScissors.Server.csproj", "{117E4C84-FC5F-4C1C-89B6-B9D8E0B71C21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Server", "RockPaperScissors\Server\RockPaperScissors.Server.csproj", "{117E4C84-FC5F-4C1C-89B6-B9D8E0B71C21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockPaperScissors.Client", "RockPaperScissors\Client\RockPaperScissors.Client.csproj", "{4C5E8F5A-478B-4D2D-9BC9-F2F01F8ED6F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Client", "RockPaperScissors\Client\RockPaperScissors.Client.csproj", "{4C5E8F5A-478B-4D2D-9BC9-F2F01F8ED6F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockPaperScissors.Shared", "RockPaperScissors\Shared\RockPaperScissors.Shared.csproj", "{E8CC5D97-D11D-4913-9682-0E98289368FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Shared", "RockPaperScissors\Shared\RockPaperScissors.Shared.csproj", "{E8CC5D97-D11D-4913-9682-0E98289368FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,18 +25,10 @@ Global
 		{283324F3-9E6D-491E-8362-5ECF902DB3E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{283324F3-9E6D-491E-8362-5ECF902DB3E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{283324F3-9E6D-491E-8362-5ECF902DB3E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FFC66C29-9ED9-45E4-A294-04EA23A8C39A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FFC66C29-9ED9-45E4-A294-04EA23A8C39A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FFC66C29-9ED9-45E4-A294-04EA23A8C39A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FFC66C29-9ED9-45E4-A294-04EA23A8C39A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD7FD374-D4A6-486F-BAF3-0C5694002277}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CD7FD374-D4A6-486F-BAF3-0C5694002277}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD7FD374-D4A6-486F-BAF3-0C5694002277}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD7FD374-D4A6-486F-BAF3-0C5694002277}.Release|Any CPU.Build.0 = Release|Any CPU
-		{801F29A2-4CE2-4E20-99D4-98E1BFCAC87F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{801F29A2-4CE2-4E20-99D4-98E1BFCAC87F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{801F29A2-4CE2-4E20-99D4-98E1BFCAC87F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{801F29A2-4CE2-4E20-99D4-98E1BFCAC87F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F6FCC88D-D9CA-427D-B171-287AF573191E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F6FCC88D-D9CA-427D-B171-287AF573191E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6FCC88D-D9CA-427D-B171-287AF573191E}.Release|Any CPU.ActiveCfg = Release|Any CPU
