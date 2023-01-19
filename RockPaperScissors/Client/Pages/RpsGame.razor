@@ -26,13 +26,10 @@
     </EditForm>
 </div>
 <div>
-    @if (string.IsNullOrWhiteSpace(gameModel.ComputerChoice.ToString()))
+    
+    @if (!(gameModel.ComputerChoice is Option.Invalid))
     {
-        <p><em>Computer has not made a decision yet</em></p>
-    }
-    else
-    {
-        <p id="computer-choice"><em>Computer Picks: @gameModel.ComputerChoice</em></p>
+        <label data-testid="computer-choice">Computer Picks:@(gameModel.ComputerChoice)</label>
     }
 </div>
 
