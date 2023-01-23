@@ -39,7 +39,7 @@
 
     private async Task SendUserChoice()
     {
-        ViewModel _Model = new(Http);
-        gameModel = await _Model.Play(playerModel, gameModel).ConfigureAwait(false);
+        RpsModel model = new(Http);
+        gameModel = await model.Play(playerModel, gameModel).ConfigureAwait(false);
     }
 }

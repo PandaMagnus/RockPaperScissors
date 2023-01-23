@@ -3,9 +3,9 @@ using System.Text.Json;
 
 namespace RockPaperScissors.Client;
 
-public class ViewModel
+public class RpsModel
 {
-    public ViewModel(HttpClient client)
+    public RpsModel(HttpClient client)
     {
         _Client = client;
     }
