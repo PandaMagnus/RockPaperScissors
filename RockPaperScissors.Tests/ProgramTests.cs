@@ -1,6 +1,3 @@
-using RockPaperScissors.Api;
-using Xunit;
-
 namespace RockPaperScissors.Tests
 {
     public class ProgramTests
