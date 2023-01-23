@@ -1,6 +1,5 @@
 ﻿using Xunit;
 using Bunit;
-using System.Net.Http;
 using RockPaperScissors.Tests.Data;
 using Microsoft.Extensions.DependencyInjection;
 using RockPaperScissors.Client.Pages;

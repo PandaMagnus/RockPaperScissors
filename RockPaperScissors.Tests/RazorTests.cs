@@ -30,6 +30,7 @@ namespace RockPaperScissors.Tests
             playerSelection.SetValue(view, "rock-win");
             await (Task)sendPlayerInputMethod.Invoke(view, null);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             Assert.Equal(
                 "rock-win", 
                 view.GetType().GetField(
@@ -53,6 +54,7 @@ namespace RockPaperScissors.Tests
                     "error",
                     System.Reflection.BindingFlags.NonPublic |
                     System.Reflection.BindingFlags.Instance).GetValue(view).ToString()));
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
     }
 }
