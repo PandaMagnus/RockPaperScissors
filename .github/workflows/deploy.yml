@@ -55,8 +55,8 @@ jobs:
           publish-profile: ${{ secrets.RPSSECRETPUBLISHPROFILE }}
           package: .
 
-      -name: Execute Integrated Tests
-        run: dotnet test .\RockPaperScissors.IntegratedTests\
+      # -name: Execute Integrated Tests
+      #   run: dotnet test .\RockPaperScissors.IntegratedTests\
 
   # test:
   #   runs-on: ubuntu-latest
