@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Client", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockPaperScissors.Shared", "RockPaperScissors\Shared\RockPaperScissors.Shared.csproj", "{E8CC5D97-D11D-4913-9682-0E98289368FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockPaperScissors.IntegratedTests", "RockPaperScissors.IntegratedTests\RockPaperScissors.IntegratedTests.csproj", "{68BA0392-9039-4367-AC85-C6C93E824817}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{E8CC5D97-D11D-4913-9682-0E98289368FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8CC5D97-D11D-4913-9682-0E98289368FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8CC5D97-D11D-4913-9682-0E98289368FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68BA0392-9039-4367-AC85-C6C93E824817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68BA0392-9039-4367-AC85-C6C93E824817}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68BA0392-9039-4367-AC85-C6C93E824817}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68BA0392-9039-4367-AC85-C6C93E824817}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
