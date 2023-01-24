@@ -56,4 +56,4 @@ jobs:
           package: .
 
       - name: Execute Integrated Tests
-        run: dotnet test ~/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Release/net7.0/RockPaperScissors.IntegratedTests.dll
+        run: dotnet test ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Release/net7.0/RockPaperScissors.IntegratedTests.dll
