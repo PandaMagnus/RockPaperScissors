@@ -66,6 +66,12 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.x'
+
+      - name: Build Test Project
+        run: dotnet build ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/RockPaperScissors.IntegratedTests.csproj
+
+      - name: Install Playwright
+        run: ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Debug/net7.0/playwright.ps1 install
       
       - name: dotnet publish
-        run: dotnet test ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/RockPaperScissors.IntegratedTests.csproj
+        run: dotnet test ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Debug/net7.0/RockPaperScissors.IntegratedTests.dll
