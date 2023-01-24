@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run Integrated Tests
+      - name: Set up .NET Core
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.x'
@@ -73,5 +73,5 @@ jobs:
       - name: Install Playwright
         run: ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Debug/net7.0/playwright.ps1 install
       
-      - name: dotnet publish
+      - name: Run Integrated Tests
         run: dotnet test ~/work/RockPaperScissors/RockPaperScissors/RockPaperScissors.IntegratedTests/bin/Debug/net7.0/RockPaperScissors.IntegratedTests.dll
